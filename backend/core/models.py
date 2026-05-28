@@ -10,7 +10,6 @@ class User(AbstractUser):
     profile_picture = models.TextField(blank=True, null=True)
     email_verified = models.BooleanField(default=False)
     verification_code = models.CharField(max_length=6, blank=True, null=True)
-    two_factor_enabled = models.BooleanField(default=False)
     task_reminders_enabled = models.BooleanField(default=False)
 
     @property

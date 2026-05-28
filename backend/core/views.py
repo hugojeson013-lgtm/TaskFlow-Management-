@@ -167,43 +167,6 @@ class LoginView(APIView):
                 if not user.email_verified and not user.is_superuser:
                     return Response({'error': 'Email not verified', 'email': email, 'needs_verification': True}, status=status.HTTP_403_FORBIDDEN)
                 
-                if user.two_factor_enabled and not user.is_superuser:
-                    code = f"{random.randint(100000, 999999)}"
-                    user.verification_code = code
-                    user.save()
-                    try:
-                        subject = 'TaskFlow 2FA Verification'
-                        html_content = f"""
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <meta charset="utf-8">
-                            <title>2FA Verification</title>
-                            <style>
-                                body {{ font-family: 'Segoe UI', sans-serif; background-color: #fafafa; padding: 20px; }}
-                                .card {{ max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; padding: 30px; border: 1px solid #fee2e2; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }}
-                                h2 {{ color: #0f172a; margin-top: 0; }}
-                                .code {{ font-size: 32px; font-weight: 800; color: #dc2626; letter-spacing: 6px; background-color: #fef2f2; border: 2px dashed #fca5a5; padding: 16px; border-radius: 12px; display: inline-block; margin: 20px 0; }}
-                            </style>
-                        </head>
-                        <body>
-                            <div class="card">
-                                <h2>TaskFlow 2FA Code</h2>
-                                <p>Please enter the following 6-digit code to complete your login:</p>
-                                <div style="text-align: center;"><span class="code">{code}</span></div>
-                                <p style="color: #64748b; font-size: 12px;">This code is valid for this login session. If you did not request it, please secure your account.</p>
-                            </div>
-                        </body>
-                        </html>
-                        """
-                        text_content = strip_tags(html_content)
-                        msg = EmailMultiAlternatives(subject, text_content, '"TaskFlow" <jeson1941@gmail.com>', [user.email])
-                        msg.attach_alternative(html_content, "text/html")
-                        msg.send()
-                    except Exception as e:
-                        print(f"Error sending 2FA code: {e}")
-                    return Response({'message': '2FA code sent', 'email': user.email, 'needs_2fa': True}, status=status.HTTP_200_OK)
-
                 return Response(UserSerializer(user).data)
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         except User.DoesNotExist:
@@ -277,7 +240,7 @@ class ResendCodeView(APIView):
         try:
             user = User.objects.get(email=email)
             if user.email_verified:
-                return Response({'message': 'Email is already verified'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Email is already verified'}, status=status.HTTP_400_BAD_REQUEST)
             
             code = f"{random.randint(100000, 999999)}"
             user.verification_code = code

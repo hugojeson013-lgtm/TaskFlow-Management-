@@ -11,7 +11,7 @@ import Chatbot from './components/Chatbot';
 import stickyNotesBg from './assets/sticky_notes.png';
 
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = 'https://taskflow-api-75bfc6.localtunnel.me/api';
 
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
@@ -130,7 +130,7 @@ export default function App() {
 }
 
 function MainLayout({ children, currentView, setCurrentView, onLogout, user }) {
-  const [menuVisible, setMenuVisible] = useState(true);
+  const [menuVisible, setMenuVisible] = useState(false);
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'profile', label: 'Profile', icon: UserIcon },
@@ -140,38 +140,36 @@ function MainLayout({ children, currentView, setCurrentView, onLogout, user }) {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      {/* Top Brand Header */}
-      <header className="h-16 flex items-center justify-between px-0 border-b border-red-100/50 bg-white" style={{ background: 'linear-gradient(to right, #fee2e2, #d1fae5)' }}>
-        <div 
-          className={`h-full flex items-center transition-all duration-300 ease-in-out border-r border-red-100/50 ${
-            menuVisible ? 'w-64 px-6 justify-between' : 'w-20 justify-center'
-          }`}
-        >
-          {menuVisible && (
-            <div className="flex items-center gap-2 text-blue-600 font-bold text-2xl tracking-tight animate-in fade-in duration-300">
-              <CheckCircle className="w-8 h-8" />
-              <span>TaskFlow</span>
-            </div>
-          )}
+      {/* Top Brand Header (Mobile Only) */}
+      <header className="h-16 flex items-center justify-between px-4 border-b border-red-100/50 bg-white" style={{ background: 'linear-gradient(to right, #fee2e2, #d1fae5)' }}>
+        <div className="flex items-center gap-3">
           <button 
             onClick={() => setMenuVisible(!menuVisible)} 
-            className="p-1.5 hover:bg-black/5 rounded-lg text-slate-700 transition-colors"
-            title={menuVisible ? "Collapse Sidebar" : "Expand Sidebar"}
+            className="p-2 hover:bg-black/5 rounded-lg text-slate-700 transition-colors"
+            title="Toggle Menu"
           >
             <Menu className="w-6 h-6" />
           </button>
+          <div className="flex items-center gap-2 text-blue-600 font-bold text-xl">
+            <CheckCircle className="w-7 h-7" />
+            <span>TaskFlow Mobile</span>
+          </div>
         </div>
-        <div className="flex-1 px-6">
-          {/* Header empty space */}
+        <div className="flex items-center gap-2">
+          {user && (
+            <div className="text-xs font-semibold text-slate-600 bg-white/60 px-3 py-1 rounded-full border border-slate-200/50">
+              Mobile App
+            </div>
+          )}
         </div>
       </header>
 
       {/* Content Area underneath the header */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Collapsible Sidebar */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Collapsible Sidebar Overlay Drawer */}
         <aside 
-          className={`flex flex-col justify-between border-r border-red-100/50 transition-all duration-300 ease-in-out bg-white ${
-            menuVisible ? 'absolute z-50 h-[calc(100vh-64px)] w-64 md:relative md:h-auto md:flex' : 'hidden md:flex w-20'
+          className={`flex flex-col justify-between border-r border-red-100/50 transition-all duration-300 ease-in-out bg-white fixed z-50 top-16 bottom-0 w-64 shadow-2xl ${
+            menuVisible ? 'left-0' : '-left-64'
           }`} 
           style={{ background: 'linear-gradient(135deg, #fee2e2 0%, #d1fae5 100%)' }}
         >
@@ -183,20 +181,18 @@ function MainLayout({ children, currentView, setCurrentView, onLogout, user }) {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setCurrentView(item.id)}
+                    onClick={() => {
+                      setCurrentView(item.id);
+                      setMenuVisible(false);
+                    }}
                     className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ${
                       isActive 
                         ? 'bg-blue-600 text-white font-medium shadow-sm' 
                         : 'text-slate-600 hover:bg-white/40 hover:text-slate-900'
                     }`}
-                    title={!menuVisible ? item.label : undefined}
                   >
                     <Icon className="w-5 h-5 flex-shrink-0" />
-                    <span 
-                      className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${
-                        menuVisible ? 'opacity-100 max-w-[200px]' : 'opacity-0 max-w-0'
-                      }`}
-                    >
+                    <span className="opacity-100 max-w-[200px] transition-all duration-300 overflow-hidden whitespace-nowrap">
                       {item.label}
                     </span>
                   </button>
@@ -215,45 +211,34 @@ function MainLayout({ children, currentView, setCurrentView, onLogout, user }) {
                   {user?.name?.charAt(0) || 'U'}
                 </div>
               )}
-              <div 
-                className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${
-                  menuVisible ? 'opacity-100 max-w-[200px]' : 'opacity-0 max-w-0'
-                }`}
-              >
+              <div className="opacity-100 max-w-[200px] transition-all duration-300 overflow-hidden whitespace-nowrap">
                 <p className="text-sm font-medium text-slate-800 truncate">{user?.name || 'User'}</p>
                 <p className="text-xs text-slate-600 truncate">{user?.email || 'user@example.com'}</p>
               </div>
             </div>
             <button 
               onClick={onLogout}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50/50 rounded-lg transition-colors border border-red-200/30`}
-              title={!menuVisible ? "Log Out" : undefined}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50/50 rounded-lg transition-colors border border-red-200/30"
             >
               <LogOut className="w-4 h-4 flex-shrink-0" />
-              <span 
-                className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${
-                  menuVisible ? 'opacity-100 max-w-[100px]' : 'opacity-0 max-w-0'
-                }`}
-              >
+              <span className="opacity-100 max-w-[100px] transition-all duration-300 overflow-hidden whitespace-nowrap">
                 Log Out
               </span>
             </button>
           </div>
         </aside>
 
+        {/* Sidebar Overlay Backdrop */}
+        {menuVisible && (
+          <div 
+            onClick={() => setMenuVisible(false)}
+            className="fixed inset-0 top-16 bg-black/40 z-40 transition-opacity duration-300"
+          />
+        )}
+
         {/* Dashboard Main Content area */}
         <main className="flex-1 flex flex-col h-full overflow-hidden relative" style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #f0fdf4 100%)' }}>
-          <header className="md:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200">
-             <div className="flex items-center gap-2 text-blue-600 font-bold text-xl">
-              <CheckCircle className="w-6 h-6" />
-              <span>TaskFlow</span>
-            </div>
-            <button onClick={() => setMenuVisible(!menuVisible)} className="p-2 text-slate-500">
-              <Menu className="w-5 h-5" />
-            </button>
-          </header>
-          
-          <div className="flex-1 overflow-y-auto p-4 md:p-8">
+          <div className="flex-1 overflow-y-auto p-4">
             <div className="max-w-5xl mx-auto h-full">
               {children}
             </div>
