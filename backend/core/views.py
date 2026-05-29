@@ -186,7 +186,9 @@ class SignupView(APIView):
                 send_verification_email(user.email, user.username, code)
             except Exception as e:
                 print(f"Error sending email: {e}")
-            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+            data = UserSerializer(user).data
+            data['verification_code'] = code  # returned for dev since SMTP is blocked
+            return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyCodeView(APIView):
@@ -249,7 +251,10 @@ class ResendCodeView(APIView):
                 send_verification_email(user.email, user.username, code)
             except Exception as e:
                 print(f"Error sending email: {e}")
-            return Response({'message': 'Verification code resent successfully'}, status=status.HTTP_200_OK)
+            return Response({
+                'message': 'Verification code resent successfully',
+                'verification_code': code  # returned for dev since SMTP is blocked
+            }, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 

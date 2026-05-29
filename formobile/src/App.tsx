@@ -11,7 +11,7 @@ import Chatbot from './components/Chatbot';
 import stickyNotesBg from './assets/sticky_notes.png';
 
 
-const API_URL = 'https://taskflow-api-75bfc6.localtunnel.me/api';
+const API_URL = '/api';
 
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
